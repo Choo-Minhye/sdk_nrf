@@ -126,9 +126,7 @@ static nrf_saadc_value_t     m_buffer_pool[2][SAMPLES_IN_BUFFER];
 static nrf_ppi_channel_t     m_ppi_channel;
 static uint32_t              m_adc_evt_counter;
 
-uint8_t Tc;
-float T,logRt,Tf,Rt;
-float R=10000.00;
+uint8_t Tc,val;
 float A=1.009249522e-03;
 float B=2.378405444e-04;
 float C=2.019202697e-07;
@@ -789,17 +787,9 @@ void saadc_callback(nrf_drv_saadc_evt_t const * p_event)
         {
          
         
-          Rt = R*( 816.00 / (float)p_event->data.done.p_buffer[i] - 1.00 );
+          val =  (float)p_event->data.done.p_buffer[i];
+          NRF_LOG_INFO("value:" NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(val));
 
-         //previously float values were here
-          
-	  logRt = log((R*( 816.00 / (float)p_event->data.done.p_buffer[i] - 1.00 )));
-          logRt = (logRt+logRt+logRt+logRt+logRt)/5.0 ;
-          T = ( 1.0 / (A + B*logRt + C*logRt*logRt*logRt ) );
-          Tc = T -  273.15; // Convert Kelvin to Celsius 273.15 
-          Tc = Tc + 11;  // calibrate according to your thermistor
-          NRF_LOG_INFO("Rt:" NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(Rt));
-          NRF_LOG_INFO("Tc:" NRF_LOG_FLOAT_MARKER "\r\n", NRF_LOG_FLOAT(Tc));
         
       
         }
@@ -878,12 +868,12 @@ int main(void)
     char con[100];
     static uint8_t len;
     
-    len = sprintf(con,"%d",Tc);
+    len = sprintf(con,"%d",val);
     
 
 
-    ble_nus_data_send(&m_nus,con,sizeof(Tc),m_conn_handle);
-    nrf_delay_ms(1000);
+    ble_nus_data_send(&m_nus,con,sizeof(val),m_conn_handle);
+    nrf_delay_ms(100);
    
     
    } 
